@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eunielly - Simulador de Enfermagem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-blue: #0B1F3A;
+            --violet: #6C3BFF;
+            --violet-light: #8B64FF;
+            --bg-color: #F4F7FA;
+            --text-color: #1A1A1A;
+            --white: #FFFFFF;
+            --error: #FF4D4D;
+            --success: #2ECC71;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(11, 31, 58, 0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--dark-blue);
+            color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            height: 6px;
+            background: #E0E0E0;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--violet);
+            width: 0%;
+            transition: var(--transition);
+        }
+
+        /* Content Areas */
+        .screen {
+            padding: 30px 25px;
+            flex-grow: 1;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Start Screen */
+        #start-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--violet);
+        }
+
+        /* Quiz Screen */
+        .question-meta {
+            font-size: 0.85rem;
+            color: var(--violet);
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 25px;
+            color: var(--dark-blue);
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            background: #F8F9FA;
+            border: 2px solid #EEE;
+            padding: 16px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .option-item:hover {
+            border-color: var(--violet-light);
+            background: #F0EDFF;
+        }
+
+        .option-item.selected {
+            border-color: var(--violet);
+            background: #F0EDFF;
+            color: var(--violet);
+        }
+
+        .option-prefix {
+            width: 30px;
+            height: 30px;
+            background: #DDD;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            font-size: 0.8rem;
+            color: var(--dark-blue);
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .option-item.selected .option-prefix {
+            background: var(--violet);
+            color: var(--white);
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--violet);
+            color: var(--white);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(108, 59, 255, 0.2);
+        }
+
+        .btn:hover {
+            background: var(--violet-light);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(108, 59, 255, 0.3);
+        }
+
+        .btn:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Result Screen */
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--violet);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(108, 59, 255, 0.3);
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .score-total {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .motivational-msg {
+            font-style: italic;
+            color: var(--dark-blue);
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .review-section {
+            margin-top: 20px;
+            border-top: 1px solid #EEE;
+            padding-top: 20px;
+        }
+
+        .review-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark-blue);
+        }
+
+        .wrong-item {
+            background: #FFF5F5;
+            border-left: 4px solid var(--error);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .wrong-question {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .explanation {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .explanation strong {
+            color: var(--dark-blue);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .app-container { border-radius: 0; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>Eunielly</h1>
+            <p>Simulador de Provas de Enfermagem</p>
+        </header>
+
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="welcome-icon">🩺</div>
+            <h2 style="margin-bottom: 10px; color: var(--dark-blue);">Bem-vinda ao Simulado</h2>
+            <p style="color: #666; margin-bottom: 30px;">Teste seus conhecimentos básicos de enfermagem com 10 questões fundamentais.</p>
+            <button id="start-btn" class="btn">Iniciar Simulado</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div id="question-meta" class="question-meta">Questão 1 de 10</div>
+            <div id="question-text" class="question-text">Carregando pergunta...</div>
+            <ul id="options-list" class="options-list">
+                <!-- Options will be injected here -->
+            </ul>
+            <button id="next-btn" class="btn" disabled>Próxima</button>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <div class="result-header">
+                <div class="score-circle">
+                    <span id="score-value" class="score-value">0</span>
+                    <span class="score-total">de 10</span>
+                </div>
+                <h2 id="result-title" style="color: var(--dark-blue); margin-bottom: 10px;">Resultado</h2>
+                <p id="motivational-msg" class="motivational-msg"></p>
+            </div>
+
+            <div id="review-section" class="review-section">
+                <h3 class="review-title">Revisão de Erros</h3>
+                <div id="wrong-answers-list">
+                    <!-- Wrong answers will be injected here -->
+                </div>
+            </div>
+
+            <button id="restart-btn" class="btn">Tentar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Qual é a frequência respiratória normal (eupneia) em um adulto em repouso?",
+                options: ["8 a 12 mpm", "12 a 20 mpm", "20 a 30 mpm", "30 a 40 mpm"],
+                answer: 1,
+                explanation: "A frequência respiratória normal para um adulto saudável em repouso varia entre 12 e 20 incursões respiratórias por minuto."
+            },
+            {
+                question: "Qual via de administração de medicamentos oferece o efeito sistêmico mais rápido?",
+                options: ["Via Oral", "Via Subcutânea", "Via Intramuscular", "Via Endovenosa"],
+                answer: 3,
+                explanation: "A via endovenosa (ou intravenosa) lança o medicamento diretamente na corrente sanguínea, eliminando a fase de absorção e proporcionando efeito imediato."
+            },
+            {
+                question: "Na avaliação dos sinais vitais, o que caracteriza a bradicardia?",
+                options: ["Frequência cardíaca acima de 100 bpm", "Frequência cardíaca entre 60 e 100 bpm", "Frequência cardíaca abaixo de 60 bpm", "Ausência de batimentos cardíacos"],
+                answer: 2,
+                explanation: "Bradicardia é o termo técnico para uma frequência cardíaca lenta, geralmente definida como menos de 60 batimentos por minuto em adultos."
+            },
+            {
+                question: "Qual a posição indicada para a realização de lavagem gástrica para prevenir aspiração?",
+                options: ["Decúbito dorsal", "Decúbito lateral esquerdo", "Posição de Trendelenburg", "Posição de Fowler"],
+                answer: 1,
+                explanation: "O decúbito lateral esquerdo facilita a drenagem do conteúdo gástrico e ajuda a prevenir a aspiração pulmonar durante o procedimento."
+            },
+            {
+                question: "Qual o valor de referência para uma pressão arterial considerada normal (normotensão) em adultos?",
+                options: ["140/90 mmHg", "130/85 mmHg", "120/80 mmHg", "110/70 mmHg"],
+                answer: 2,
+                explanation: "Embora existam variações individuais, 120/80 mmHg é o valor clássico de referência para a normalidade pressórica."
+            },
+            {
+                question: "O que significa a regra dos '9 certos' na administração de medicamentos?",
+                options: ["Um protocolo de 9 medicamentos proibidos", "Um protocolo de segurança para evitar erros na medicação", "Uma escala de dor de 0 a 9", "O tempo de 9 minutos para absorção"],
+                answer: 1,
+                explanation: "Os '9 certos' (Paciente, Medicamento, Via, Dose, Hora, Registro, Orientação, Forma, Resposta) são barreiras de segurança fundamentais na enfermagem."
+            },
+            {
+                question: "Qual o principal cuidado ao realizar a higiene oral em um paciente inconsciente?",
+                options: ["Usar muita água para enxaguar", "Manter o paciente em decúbito dorsal", "Prevenir a aspiração de líquidos", "Realizar apenas uma vez ao dia"],
+                answer: 2,
+                explanation: "Em pacientes inconscientes, o risco de broncoaspiração é alto. Deve-se usar pouca água, aspirar se necessário e manter a cabeça lateralizada."
+            },
+            {
+                question: "Qual temperatura axilar é considerada o início de um estado febril (febre)?",
+                options: ["Acima de 36,5°C", "Acima de 37,2°C", "Acima de 37,8°C", "Acima de 39,0°C"],
+                answer: 2,
+                explanation: "A febre geralmente é considerada quando a temperatura axilar ultrapassa 37,8°C. Valores entre 37,3°C e 37,7°C são chamados de estado febril ou febrícula."
+            },
+            {
+                question: "Qual o ângulo correto para a aplicação de uma injeção por via intramuscular profunda?",
+                options: ["15 graus", "45 graus", "90 graus", "180 graus"],
+                answer: 2,
+                explanation: "Injeções intramusculares devem ser aplicadas em um ângulo de 90 graus para garantir que a agulha atinja o tecido muscular."
+            },
+            {
+                question: "Para que serve a Escala de Braden na prática de enfermagem?",
+                options: ["Avaliar o nível de consciência", "Avaliar o risco de queda", "Avaliar o risco de lesão por pressão", "Avaliar a intensidade da dor"],
+                answer: 2,
+                explanation: "A Escala de Braden é uma ferramenta validada para prever o risco de desenvolvimento de lesões por pressão (escaras) em pacientes acamados."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+        let userAnswers = [];
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionMeta = document.getElementById('question-meta');
+        const questionText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options-list');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreValue = document.getElementById('score-value');
+        const motivationalMsg = document.getElementById('motivational-msg');
+        const wrongAnswersList = document.getElementById('wrong-answers-list');
+        const reviewSection = document.getElementById('review-section');
+
+        // Initialize
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', handleNextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            showScreen(quizScreen);
+            loadQuestion();
+        }
+
+        function showScreen(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            screen.classList.add('active');
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            questionMeta.innerText = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+            questionText.innerText = q.question;
+            optionsList.innerHTML = '';
+            selectedOption = null;
+            nextBtn.disabled = true;
+
+            q.options.forEach((opt, index) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+                li.innerHTML = `
+                    <div class="option-prefix">${String.fromCharCode(65 + index)}</div>
+                    <span>${opt}</span>
+                `;
+                li.addEventListener('click', () => selectOption(index, li));
+                optionsList.appendChild(li);
+            });
+
+            updateProgressBar();
+        }
+
+        function selectOption(index, element) {
+            selectedOption = index;
+            document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            nextBtn.disabled = false;
+        }
+
+        function handleNextQuestion() {
+            const q = questions[currentQuestionIndex];
+            userAnswers.push(selectedOption);
+
+            if (selectedOption === q.answer) {
+                score++;
+            }
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function showResults() {
+            showScreen(resultScreen);
+            progressBar.style.width = '100%';
+            scoreValue.innerText = score;
+
+            // Motivational Message
+            if (score === 10) {
+                motivationalMsg.innerText = "Excelente! Você domina os fundamentos da enfermagem. Continue assim!";
+            } else if (score >= 7) {
+                motivationalMsg.innerText = "Muito bom! Você tem uma base sólida, mas sempre há espaço para revisar.";
+            } else if (score >= 5) {
+                motivationalMsg.innerText = "Bom começo! Revise os pontos onde teve dúvida para fortalecer seu conhecimento.";
+            } else {
+                motivationalMsg.innerText = "Não desanime! A enfermagem exige estudo constante. Revise a matéria e tente novamente.";
+            }
+
+            // Review Section
+            wrongAnswersList.innerHTML = '';
+            let hasWrongs = false;
+
+            questions.forEach((q, index) => {
+                if (userAnswers[index] !== q.answer) {
+                    hasWrongs = true;
+                    const div = document.createElement('div');
+                    div.className = 'wrong-item';
+                    div.innerHTML = `
+                        <div class="wrong-question">${index + 1}. ${q.question}</div>
+                        <div class="explanation">
+                            <strong>Sua resposta:</strong> ${q.options[userAnswers[index]]}<br>
+                            <strong>Resposta correta:</strong> ${q.options[q.answer]}<br><br>
+                            <strong>Explicação:</strong> ${q.explanation}
+                        </div>
+                    `;
+                    wrongAnswersList.appendChild(div);
+                }
+            });
+
+            reviewSection.style.display = hasWrongs ? 'block' : 'none';
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+    </script>
+</body>
+</html>
